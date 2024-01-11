@@ -19,7 +19,31 @@ After TDs are started, users need to setup a K8S cluster in the TDs. Please refe
 _NOTE: If the cluster has only one node (master node), the taint on the node needs to be removed._
 
 ### Option 2: Add the TD to an existing K8S cluster
-TBD
+#### Prerequisites
+- Create network bridge on the host for TD communication.
+- Install containerd on the TD nodes. Please refer to the [containerd official documentaion](https://containerd.io/) for detailed steps. 
+- Install kubeadm, kubelet and kubectl on the TD nodes. Please refer to the [k8s official documentation](https://kubernetes.io/docs/home/) for detailed steps.
+
+_NOTE: please set `HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY` in your terminal if they are needed in your environments._
+
+#### Add the TD to the K8S cluster
+Run the kubeadm join command on the TD nodes, specifying the Cluster Token and Master Node's IP address. This command is generated during the initialization of the master node using 'kubeadm init'.
+```
+$ sudo kubeadm join <MASTER_NODE_IP>:<PORT> --token <TOKEN> --discovery-token-ca-cert-hash sha256:<HASH>
+```
+Replace \<MASTER_NODE_IP\>, \<PORT\>, \<TOKEN\>, and \<HASH\> with the appropriate values.
+
+Verify whether the TD nodes successfully joins the cluster.
+```
+# Copy the admin.conf file from the master node to the TD node.
+$ scp user@<MASTER_NODE_IP>:/etc/kubernetes/admin.conf ~/.kube/config
+
+# Set the KUBECONFIG environment variable to point to the copied admin.conf file.
+$ export KUBECONFIG=~/.kube/config
+
+# Check whether the TD nodes join cluster successfully. When the TD nodes is listed as "Ready", it's successful.
+$ kubectl get nodes -owide
+```
 
 ## Deploy CCNP
 
